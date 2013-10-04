@@ -2,30 +2,25 @@
 
 A simple wrapper around a redis store to implement keys with a timestamp.
 
-The "For" in CacheFor refers to 1) the content labeled by the key name, 2) the cache duration, and 3) the framework (e.g. Rails)
+The "For" in CacheFor refers to 1) the content labeled by the key name, and 2) the cache duration.
 
 ## Installation
+Ruby ~>2.0.0 required.
 
-Add these gems to your application's Gemfile:
-
-### Rails
-
-    gem 'cache_for'
-    gem 'redis'
-
-### Rack
+Add this gem to your application's Gemfile:
 
     gem 'cache_for'
-    gem 'redis-rack-cache'
-
-### Sinatra
-Add `register Sinatra::Cache`  to your config.ru
-
-    gem 'cache_for'
-    gem 'redis-sinatra'
 
 ## Usage
-In your app, wherever you need some caching sweetness (Rails example)
+In your app, wherever you need some caching sweetness
 
-    RedisCache = CacheFor::Base.new
-    values = RedisCache.fetch('Product-options') { Product.all.collect {|product| [product.name, product.id]} }
+    CacheForApp = CacheFor::Base.new()
+    values = CacheForApp.fetch('Product-options') { Product.all.collect {|product| [product.name, product.id]} }
+
+Optionally, set a redis endpoint
+
+    CacheFor::Base.new( 'redis://localhost:6379' )
+
+Optionally, set a default TTL
+
+    CacheFor::Base.new( default_secs: 600 )

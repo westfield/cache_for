@@ -30,29 +30,41 @@ module CacheFor
       (for_seconds * (Time.now.to_i / for_seconds).to_i)
     end
 
-    def read(key)
-      @redis_store.get(key)
+    def get(key)
+      begin
+        @redis_store.get(key)
+      rescue
+        self.class::CacheMiss
+      end
     end
+    alias_method :read, :get
 
-    def write(key, value)
-      @redis_store.set(key, value)
+    def set(key, value)
+      begin
+        @redis_store.set(key, value)
+      rescue
+      end
     end
+    alias_method :write, :set
 
-    def cache_miss
-      self.class::CacheMiss
+    def expire(key, for_seconds)
+      begin
+        @redis_store.expire(key, for_seconds)
+      rescue
+      end
     end
 
     def fetch(name, for_seconds = @default_secs)
       key = "#{name}#{cache_time(for_seconds)}"
-      cached = read(key) # #read that should fail always returns an array!?
-      if cached != self.class::CacheMiss # FIXME need to investigate results that should fail
-        puts "cache hit #{key}" # FIME need logging?
+      cached = get(key)
+      if cached != self.class::CacheMiss
+        puts "cache hit #{key}"
         cached
       else
         puts "cache miss #{key}"
         new_value = yield
-  # FIXME add expires value
-        write(key, new_value) # apparently not caching `false`
+        set(key, new_value) # apparently not storing `false`
+        expire(key, for_seconds)
         new_value
       end
     end

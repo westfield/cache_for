@@ -39,6 +39,14 @@ module CacheFor
     end
     alias_method :read, :get
 
+    def get_json(key)
+      value = get(key)
+      if value != self.class::CacheMiss
+        return JSON.parse(value)
+      end
+      {}
+    end
+
     def set(key, value)
       begin
         @redis_store.set(key, value)
@@ -46,6 +54,10 @@ module CacheFor
       end
     end
     alias_method :write, :set
+
+    def set_json(key, value)
+      set(key, value.to_json)
+    end
 
     def expire(key, for_seconds)
       begin

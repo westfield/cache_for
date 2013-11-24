@@ -6,17 +6,17 @@ require 'uri'
 module CacheFor
 
   class Base
+    attr_accessor :for_seconds
 
     DefaultSeconds = 600 # 10 minutes
     DefaultUri = URI::parse("redis://localhost:6379")
-    CacheMiss = nil #[] # vailid for Rack?
+    CacheMiss = nil
 
-    def initialize(redis_uri = nil, default_secs: nil)
+    def initialize(redis_uri = nil, default_seconds: Base::DefaultSeconds)
       redis_uri = to_uri(redis_uri)
       redis_store = Redis.new( host: redis_uri.host, port: redis_uri.port )
-      @redis_store, @default_secs = redis_store, (default_secs || Base::DefaultSeconds)
+      @redis_store, @for_seconds = redis_store, default_seconds
     end
-
 
     def to_uri(obj = DefaultUri)
       obj = DefaultUri if obj.nil?
@@ -24,47 +24,52 @@ module CacheFor
       obj
     end
 
-    def cache_time(for_seconds)
-      # a time integer that remains unchanging for <for_seconds> seconds
-      #   rounds down to nearest multiple of <for_seconds>
-      (for_seconds * (Time.now.to_i / for_seconds).to_i)
-    end
-
-    def get(key)
+    def get(name, seconds = nil)
       begin
-        @redis_store.get(key)
+        if found = @redis_store.get(key_for(name, seconds))
+          puts "cache hit #{key_for(name, seconds)}"
+          found
+        end
       rescue
+        puts "cache miss #{key_for(name, seconds)}"
         self.class::CacheMiss
       end
     end
     alias_method :read, :get
 
-    def set(key, value)
+    def set(name, value, seconds = nil)
       begin
-        @redis_store.set(key, value)
+        @redis_store.set(key_for(name, seconds), value)
       rescue
       end
     end
     alias_method :write, :set
 
-    def expire(key, for_seconds)
+    def expire(name, seconds = nil)
       begin
-        @redis_store.expire(key, for_seconds)
+        @redis_store.expire(key_for(name, seconds))
       rescue
       end
     end
 
-    def fetch(name, for_seconds = @default_secs)
-      key = "#{name}#{cache_time(for_seconds)}"
-      cached = get(key)
-      if cached != self.class::CacheMiss
-        puts "cache hit #{key}"
+    def cache_time(seconds = nil)
+      seconds ||= for_seconds
+      # a time integer that remains unchanging for <seconds> seconds
+      #   rounds down to nearest multiple of seconds
+      (seconds * (Time.now.to_i / seconds).to_i)
+    end
+
+    def key_for(name, seconds = nil)
+      "#{name}#{cache_time(seconds)}"
+    end
+
+    def fetch(name, seconds = nil)
+      if (cached = get(name, seconds)) != self.class::CacheMiss
         cached
       else
-        puts "cache miss #{key}"
         new_value = yield
-        set(key, new_value) # apparently not storing `false`
-        expire(key, for_seconds)
+        set(name, new_value, seconds)
+        expire(name, seconds)
         new_value
       end
     end

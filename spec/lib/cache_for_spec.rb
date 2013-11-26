@@ -7,7 +7,7 @@ shared_examples "cache_time is" do |secs, cache_time|
   }
 
   it "#{cache_time} when time is #{secs}" do
-    CacheFor::Base.new('redis://redis.example.com').cache_time(duration).should == cache_time
+    CacheFor::Base.new('redis://redis.example.com', default_seconds: duration).cache_time.should == cache_time
   end
 end
 

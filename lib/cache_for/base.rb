@@ -14,11 +14,8 @@ module CacheFor
     CacheMiss = nil
 
     def initialize(redis_uri = nil, default_seconds: Base::DefaultSeconds)
-      redis_uri = to_uri(redis_uri)
-      redis_store = Redis.new( host: redis_uri.host, port: redis_uri.port )
-      database = redis_uri.path[1..-1] || '0'
-      redis_store.select database rescue nil
-      @redis_store, @for_seconds = redis_store, default_seconds
+      @for_seconds = default_seconds
+      @redis_store = Redis.new url: redis_uri
     end
 
     def to_uri(obj = DefaultUri)

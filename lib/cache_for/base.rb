@@ -7,6 +7,7 @@ module CacheFor
 
   class Base
     attr_accessor :for_seconds
+    attr_accessor :redis_store
 
     DefaultSeconds = 600 # 10 minutes
     DefaultUri = URI::parse("redis://localhost:6379")

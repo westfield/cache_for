@@ -11,27 +11,23 @@ shared_examples "cache_time is" do |secs, cache_time|
   end
 end
 
-describe 'CacheFor#cache_time' do
-
-  describe "to_uri" do
-
-    it "handles nil" do
-      CacheFor::Base.new.to_uri.to_s.should == 'redis://localhost:6379'
+describe 'CacheFor' do
+  describe "#new" do
+    context "with nil url" do
+      subject { CacheFor::Base.new.redis_store.client }
+      its(:scheme) { should eq 'redis' }
+      its(:host) { should eq '127.0.0.1' }
+      its(:port) { should eq 6379 }
+      its(:db) { should eq 0 }
     end
 
-    it "handles string url" do
-      CacheFor::Base.new.to_uri('redis://localhost:6379').to_s.should == 'redis://localhost:6379'
-    end
-
-    it "handles string url" do
-      CacheFor::Base.new.to_uri(URI::parse('redis://localhost:6379')).to_s.should == 'redis://localhost:6379'
-    end
-
-
-    describe "returns a URI" do
-      subject { CacheFor::Base.new.to_uri() }
-      its(:host) {should == 'localhost'}
-      its(:port) {should == 6379}
+    context "with url" do
+      let(:url) { 'redis://dummy.com:6666/6' }
+      subject { CacheFor::Base.new(url).redis_store.client }
+      its(:scheme) { should eq 'redis' }
+      its(:host) { should eq 'dummy.com' }
+      its(:port) { should eq 6666 }
+      its(:db) { should eq 6 }
     end
   end
 end

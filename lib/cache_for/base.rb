@@ -7,21 +7,16 @@ module CacheFor
 
   class Base
     attr_accessor :for_seconds
+    attr_accessor :redis_store
 
     DefaultSeconds = 600 # 10 minutes
-    DefaultUri = URI::parse("redis://localhost:6379")
     CacheMiss = nil
 
+    # When redis_uri == nil, Redis gem will use its own
+    # default url, typically redis://locahost:6379.
     def initialize(redis_uri = nil, default_seconds: Base::DefaultSeconds)
-      redis_uri = to_uri(redis_uri)
-      redis_store = Redis.new( host: redis_uri.host, port: redis_uri.port )
-      @redis_store, @for_seconds = redis_store, default_seconds
-    end
-
-    def to_uri(obj = DefaultUri)
-      obj = DefaultUri if obj.nil?
-      obj = URI::parse(obj) unless obj.respond_to?(:host)
-      obj
+      @for_seconds = default_seconds
+      @redis_store = Redis.new url: redis_uri
     end
 
     def get(name, seconds = nil)

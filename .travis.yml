@@ -3,6 +3,7 @@ rvm:
   - 2.2.0
   - 2.2.1
   - 2.2.2
+before_script: "sudo redis-server /etc/redis/redis.conf" 
 before_install:
   - gem install bundler
 script: "bundle exec rspec"

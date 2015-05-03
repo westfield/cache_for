@@ -1,15 +1,17 @@
 language: ruby
 rvm:
-  - 2.2.0
-  - 2.2.1
-  - 2.2.2
-before_script: "sudo redis-server /etc/redis/redis.conf" 
+- 2.2.0
+- 2.2.1
+- 2.2.2
+before_script: sudo redis-server /etc/redis/redis.conf
 before_install:
-  - gem install bundler
-script: "bundle exec rspec"
+- gem install bundler
+script: bundle exec rspec
 deploy:
   provider: rubygems
   api_key:
-    secure: FZVmAZ6QMTUCZU4Iogf3J+                                                                                                             DgVyqZMi353GaG1wecIejOgsZd5mcZu7j0AS2OFcU9gvoq28DG3v0aM70KoFqGIgcxPoP2Y84B6USK3rpVxGxudcj6yXuVLqvLWv2l47oUTVU5Z71GL42m6UchYub23eVkZoyVTuzKUzxQ3P9nMNg=
+    secure: MWXk12XXWJ/Zz44uS/zrPVYM3wTyel9DYciInGFea5ZetJqnjn10CcNXAhKONvmgjT1EGz6yQnx1JicN9IeQ/OeRZsTArIpAeoYBVDQg4tlrHHVQAOEqr9MVrskIYcMdRttrpmHnzoRuNdWZkCG/pvE6KM3V0sOaXA+2FUfgMOU=
+  gem: cache_for
   on:
     tags: true
+    repo: westfieldlabs/cache_for
